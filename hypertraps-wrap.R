@@ -4,7 +4,6 @@ hypertraps = function(obs,                   # matrix of observations
                       param.length = 2,      # MCMC chain length: 10^(n+2)
                       param.kernel = 5,      # MCMC perturbation kernel -- see source code
                       label="label",         # label for file I/O
-                      simulate="fork"        # "linear" to call in code; "fork" to fork; other to not simulate and just retrieve info
                       ) {
   
   # catch various issues
@@ -69,17 +68,10 @@ hypertraps = function(obs,                   # matrix of observations
   write(final.rows, filename)
   
   # create call to HyperTraPS
-  if(simulate == "linear") {
-    syscommand = paste(c("./hypertraps-dt.ce ", filename, " 1 ", param.length, " ", param.kernel, " 0"), collapse="")
-    message(paste(c("Attempting to externally execute ", syscommand), collapse=""))
-    system(syscommand)
-  } else if(simulate == "fork") {
-    syscommand = paste(c("./hypertraps-dt.ce ", filename, " 1 ", param.length, " ", param.kernel, " 0 &"), collapse="")
-    message(paste(c("Attempting to externally execute ", syscommand), collapse=""))
-    system(syscommand)
-    message("Not retrieving info -- process forked")
-    return(NULL)
-  }
+  syscommand = paste(c("./hypertraps-dt.ce ", filename, " 1 ", param.length, " ", param.kernel, " 0"), collapse="")
+  message(paste(c("Attempting to externally execute ", syscommand), collapse=""))
+  system(syscommand)
+  
   
   # attempt to read the output of the run
   message("Attempting to read output...")

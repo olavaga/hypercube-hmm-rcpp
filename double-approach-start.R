@@ -36,15 +36,12 @@ for(fname in filenames) {
   label = fname
   ### HyperHMM
   if(start.hhmm == T) {
-    # fork external process
-    fitted = hyperhmm(as.matrix(mydata), precursors=NULL, label=label, nboot=100, random.walkers=1, fork=T)
+    fitted = hyperhmm(as.matrix(mydata), precursors=NULL, label=label, nboot=100, random.walkers=1)
   }
   
   ### HyperTraPS
   if(start.ht == T) {
-    ht.simulate = "fork"
-    # fork external processes
-    post.sample = hypertraps(as.matrix(mydata), param.length=ht.length, param.kernel=param.kernel, label=label, simulate = ht.simulate)
+    post.sample = hypertraps(as.matrix(mydata), param.length=ht.length, param.kernel=param.kernel, label=label)
   }
 }
 
@@ -67,13 +64,11 @@ for(i in 1:length(rl)) {
   }
 }
 label = fname
-# fork the external code
 if(start.hhmm == T) {
-  fitted = hyperhmm(as.matrix(obs), precursors=as.matrix(prec), label=label, nboot=3, random.walkers=1, fork=T)
+  fitted = hyperhmm(as.matrix(obs), precursors=as.matrix(prec), label=label, nboot=3, random.walkers=1)
 }
 if(start.ht == T) {
   param.kernel = 5
-  ht.simulate = "fork"
   
-  post.sample = hypertraps(as.matrix(obs), precursors=as.matrix(prec), param.length=ht.length, param.kernel=param.kernel, label=label, simulate = ht.simulate)
+  post.sample = hypertraps(as.matrix(obs), precursors=as.matrix(prec), param.length=ht.length, param.kernel=param.kernel, label=label)
 }

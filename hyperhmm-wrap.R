@@ -17,7 +17,6 @@ hyperhmm = function(obs,                 # matrix of observations
                     random.walkers=0,    # run random walkers for each resample? 0 no 1 yes
                     label="label",       # label for file I/O 
                     simulate = T,        # actually run HyperHMM? If not, try and pull precomputed output using "label"
-                    fork=F               # if we're running it, fork to a new process, or keep linear?
                     ) {
   
   if(simulate == T) {
@@ -83,16 +82,8 @@ hyperhmm = function(obs,                 # matrix of observations
   write(final.rows, filename)
   
   # create call to HyperHMM
-    if(fork == T) {
-      message(paste(c("Attempting to externally execute "), collapse=""))
-      hyperhmmcpp(filename, L, nboot, label, cross.sectional, random.walkers)
-      message("Forked: not retrieving output")
-      return(NULL)
-    } else {
-      hyperhmmcpp(filename, L, nboot, label, cross.sectional, random.walkers)
-      message(paste(c("Attempting to externally execute "), collapse=""))
-    }
-  }
+  message(paste(c("Executing HyperHMM "), collapse=""))
+  hyperhmmcpp(filename, L, nboot, label, cross.sectional, random.walkers)
   
   # attempt to read the output of the run
   mean.filename = paste(c("mean_", label, ".txt"), collapse="")
