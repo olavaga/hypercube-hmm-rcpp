@@ -1,4 +1,6 @@
-#include <armadillo>
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -9,10 +11,12 @@
 #include <string>
 #include <iterator>
 #include <random>
+#include <Rcpp.h>
 
 
 
 using namespace std;
+using namespace Rcpp;
 
 
 /*
@@ -26,7 +30,7 @@ long int mypow2(int r)
 {
   long int v = 1; //Store the output
   int i;
-  for(i = 0; i < r; i++)
+  for(i = 0; i < r; i++) 
     v *= 2; //Multiply v with 2 r times
   return v;
 }
@@ -1312,33 +1316,19 @@ double sum_vector(vector<double> vec){
   If you have cross_sectional data set cross_sectional = 1, if longitudinal data set cross_sectional = 0.
   If you want to add summary data for each bootstrap set rw_bootstrap = 1, else set rw_bootstrap = 0.
 */
-int main(int argc, char** argv){
-
-  int L, n_boot, rw_boot;
+// [[Rcpp::export]]
+int hyperhmmcpp(String filename, int L, int n_boot, String label, int crossectional, int rw_boot){
 
   double time;
-
-
-
-  if(argc != 7 || (atoi(argv[5]) != 0 && atoi(argv[5]) != 1) || atoi(argv[2]) <= 0 || atoi(argv[3]) < 0 || (atoi(argv[6]) != 0 && atoi(argv[6]) != 1)) {
-    cout << "Usage:\n\t./hyperhmm.ce [datafile] [number of features] [number of bootstrap resamples] [output file label] [cross-sectional data (0 or 1)] [simulate random walkers for each sample (0 or 1)]\n";
-    return 1;
-  }
-
-  L = atoi(argv[2]);
-  n_boot = atoi(argv[3]);
-  rw_boot = atoi(argv[6]);
-
-
 
   arma::cube mean(L,L,n_boot+1,arma::fill::zeros);
   arma::cube sd(L,L,n_boot+1,arma::fill::zeros);
 
-  if(atoi(argv[5]) == 1){
-    do_bootstrap(argv[1], n_boot, L, mean, sd, argv[4], time, rw_boot);
+  if(crossectional == 1){
+    do_bootstrap(filename, n_boot, L, mean, sd, label, time, rw_boot);
   }
-  else if(atoi(argv[5]) == 0){
-    do_bootstrap2(argv[1], n_boot, L, mean, sd, argv[4], time, rw_boot);
+  else if(crossectional == 0){
+    do_bootstrap2(filename, n_boot, L, mean, sd, label, time, rw_boot);
   }
 
   //cout << "The time it took to run the algorithm with " << n_boot << " bootstrap(s): " << time/(n_boot+1) << endl;

@@ -6,35 +6,9 @@ library(ggrepel)
 library(ggraph)
 library(gridExtra)
 library(igraph)
+library(Rcpp)
 
-## try to find (or compile) the HyperHMM executable in this directory for external calling
-
-# possible names of executable
-cmds = c("hyperhmm.ce", "hyperhmm.exe", "hyperhmm")
-
-# see if any are here
-found = F
-for(cmd in cmds) {
-  if(cmd %in% list.files()) { commandname = cmd; found = T }
-}
-if(found == F) {
-  message("Couldn't find HyperHMM executable in this folder. Attempting an automatic compilation.")
-  # detect platform -- try g++ on unix and cl (Visual Studio) on Windows
-  if(.Platform$OS.type == "unix") {
-    system("g++ hyperhmm.cpp -lm -larmadillo -o hyperhmm.ce")
-    # ^ that's a sort of default compile command on a Unix box, but others will differ. My Mac for example needs
-    # system("g++ hyperhmm.cpp -I/opt/homebrew/Cellar/armadillo/11.4.2/include -L/opt/homebrew/Cellar/armadillo/11.4.2/lib -larmadillo -std=c++11 -o hyperhmm.ce")
-  } else {
-    system("cl /EHsc hyperhmm.cpp")
-  }
-  # after attempted compilation, check for executable again
-  for(cmd in cmds) {
-    if(cmd %in% list.files()) { commandname = cmd; found = T }
-  }
-  if(found == F) {}
-  message("Couldn't find HyperHMM executable in this folder. Smart automatic compilation isn't yet supported; please compile the source code (using, for example, gcc on Mac/Linux or Visual Studio on Windows) and run this script from the folder containing the executable.")
-  stop()
-}
+sourceCpp("hyperhmm.cpp")
 
 ## wrapper function for a HyperHMM call
 hyperhmm = function(obs,                 # matrix of observations
@@ -110,15 +84,13 @@ hyperhmm = function(obs,                 # matrix of observations
   
   # create call to HyperHMM
     if(fork == T) {
-      syscommand = paste(c("./", commandname, " ", filename, " ", L, " ", nboot, " ", label, " ", cross.sectional, " ", random.walkers, " &"), collapse="")
-      message(paste(c("Attempting to externally execute ", syscommand), collapse=""))
-      system(syscommand)
+      message(paste(c("Attempting to externally execute "), collapse=""))
+      hyperhmmcpp(filename, L, nboot, label, cross.sectional, random.walkers)
       message("Forked: not retrieving output")
       return(NULL)
     } else {
-      syscommand = paste(c("./", commandname, " ", filename, " ", L, " ", nboot, " ", label, " ", cross.sectional, " ", random.walkers), collapse="")
-      message(paste(c("Attempting to externally execute ", syscommand), collapse=""))
-      system(syscommand)
+      hyperhmmcpp(filename, L, nboot, label, cross.sectional, random.walkers)
+      message(paste(c("Attempting to externally execute "), collapse=""))
     }
   }
   
