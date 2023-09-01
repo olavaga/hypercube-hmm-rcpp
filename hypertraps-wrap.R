@@ -1,9 +1,12 @@
+library(Rcpp)
+sourceCpp("hypertraps-dt.cpp")
+
 ## wrapper function for a HyperTraPS call
 hypertraps = function(obs,                   # matrix of observations
                       precursors=NA,         # matrix of precursors (e.g. for ancestor-descendant samples)
                       param.length = 2,      # MCMC chain length: 10^(n+2)
                       param.kernel = 5,      # MCMC perturbation kernel -- see source code
-                      label="label",         # label for file I/O
+                      label="label"          # label for file I/O
                       ) {
   
   # catch various issues
@@ -67,10 +70,9 @@ hypertraps = function(obs,                   # matrix of observations
   filename = paste(c("ht-in-", label, ".txt"), collapse="")
   write(final.rows, filename)
   
-  # create call to HyperTraPS
-  syscommand = paste(c("./hypertraps-dt.ce ", filename, " 1 ", param.length, " ", param.kernel, " 0"), collapse="")
-  message(paste(c("Attempting to externally execute ", syscommand), collapse=""))
-  system(syscommand)
+  # call HyperTraPS
+  message(paste(c("Executing HyperTraPS "), collapse=""))
+  hypertrapsrcpp(filename, 1, param.length, param.kernel, 0)
   
   
   # attempt to read the output of the run

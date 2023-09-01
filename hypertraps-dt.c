@@ -7,6 +7,8 @@
 #include <math.h>
 #include <time.h>
 
+#include "hypertraps-dt.h"
+
 #define RND drand48()
 
 // maximum number of datapoints (just for memory allocation)
@@ -295,7 +297,7 @@ double GetLikelihoodCoalescentChange(int *matrix, int len, int ntarg, double *nt
 }
  
 // main function processes command-line arguments and run the inference loop
-int main(int argc, char *argv[])
+int hypertrapsrc(char *filename, int seed, int lengthindex, int kernelindex, int losses)
 {
   int parents[_MAXN];
   FILE *fp;
@@ -308,7 +310,6 @@ int main(int argc, char *argv[])
   double lik, nlik;
   int *rec, *tmprec;
   int maxt, allruns;
-  int seed;
   char str[200];
   char fstr[200];
   char shotstr[200], bestshotstr[200];
@@ -329,24 +330,10 @@ int main(int argc, char *argv[])
   int nancount = 0;
   int spectrumtype;
   double bestlik = 0;
-  int lengthindex, kernelindex;
   int SAMPLE;
-  int losses;
 
   printf("\nHyperTraPS\n\n");
-  
-  // process command-line arguments
-  if(argc != 6)
-    {
-      printf("Usage:\n   hypertraps-dt.ce [observations-file] [random number seed] [length index] [kernel index] [considering losses (1) or gains (0)]\n\n");
-      return 0;
-    }
-  seed = atoi(argv[2]);
-  lengthindex = atoi(argv[3]);
-  kernelindex = atoi(argv[4]);
-  losses = atoi(argv[5]);
-
-  printf("Running with:\n[observations-file]: %s\n[random number seed]: %i\n[length index]: %i\n[kernel index]: %i\n[losses (1) or gains (0)]: %i\n", argv[1], seed, lengthindex, kernelindex, losses);
+  printf("Running with:\n[observations-file]: %s\n[random number seed]: %i\n[length index]: %i\n[kernel index]: %i\n[losses (1) or gains (0)]: %i\n", filename, seed, lengthindex, kernelindex, losses);
 
   // initialise and allocate
   maxt = (lengthindex == 1 ? 1000 : (lengthindex == 2 ? 10000 : lengthindex == 3 ? 100000 : (lengthindex == 4 ? 1000000 : 100)));
@@ -374,10 +361,10 @@ int main(int argc, char *argv[])
   
   // read data on changes from input file
   // if we're thinking about losses, we're regarding gene losses as feature acquisitions; and thus inverting the data
-  fp = fopen(argv[1], "r");
+  fp = fopen(filename, "r");
   if(fp == NULL)
     {
-      printf("Couldn't find observations file %s\n", argv[1]);
+      printf("Couldn't find observations file %s\n", filename);
       return 0;
     }
   i = 0; len = 0;
@@ -423,9 +410,9 @@ int main(int argc, char *argv[])
   tmpmat = (double*)malloc(sizeof(double)*NVAL);
 
   // prepare output files
-  sprintf(shotstr, "%s-posterior-%i-%i-%i-%i.txt", argv[1], spectrumtype, seed, lengthindex, kernelindex);
+  sprintf(shotstr, "%s-posterior-%i-%i-%i-%i.txt", filename, spectrumtype, seed, lengthindex, kernelindex);
   fp = fopen(shotstr, "w"); fclose(fp);
-  sprintf(bestshotstr, "%s-best-%i-%i-%i-%i.txt", argv[1], spectrumtype, seed, lengthindex, kernelindex);
+  sprintf(bestshotstr, "%s-best-%i-%i-%i-%i.txt", filename, spectrumtype, seed, lengthindex, kernelindex);
   fp = fopen(bestshotstr, "w"); fclose(fp);
 
   // initialise with an agnostic transition matrix
